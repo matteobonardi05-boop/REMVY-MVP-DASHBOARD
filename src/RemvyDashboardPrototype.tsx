@@ -26,6 +26,7 @@ import "./RemvyDashboardPrototype.css";
 type Page = "dashboard" | "team" | "moments" | "orders" | "reports";
 type ModalName = "detail" | "edit" | "employee" | "employeeMoments" | null;
 type MomentType = "Birthday" | "Onboarding";
+type MomentProcessId = "birthday" | "onboarding" | "workversary";
 
 type Moment = {
   id: string;
@@ -73,6 +74,19 @@ type Package = {
   selected?: boolean;
   suppliers: string[];
   options: string[];
+};
+
+type MomentProcess = {
+  id: MomentProcessId;
+  title: string;
+  subtitle: string;
+  state: "Attivo" | "In setup" | "Da attivare";
+  icon: ReactNode;
+  headline: string;
+  description: string;
+  roadmap: { title: string; detail: string; status: "live" | "editable" | "planned" }[];
+  personalization: { label: string; value: string }[];
+  options: { title: string; detail: string }[];
 };
 
 const upcomingMoments: Moment[] = [
@@ -212,6 +226,84 @@ const packages: Package[] = [
   },
 ];
 
+const momentProcesses: MomentProcess[] = [
+  {
+    id: "birthday",
+    title: "Compleanni",
+    subtitle: "Gestione compleanni",
+    state: "Attivo",
+    icon: <CakeSlice size={20} />,
+    headline: "Standardizza ogni compleanno senza perdere il tocco personale.",
+    description: "Remvy gestisce calendario, scelta gift, fornitore locale, reminder di conferma, delivery e feedback.",
+    roadmap: [
+      { title: "7 giorni prima", detail: "Reminder al responsabile per confermare persona, sede e tono del messaggio.", status: "live" },
+      { title: "5 giorni prima", detail: "Fornitore selezionato e opzioni gift bloccate in base alle regole aziendali.", status: "live" },
+      { title: "48h cut-off", detail: "Ultima finestra per modifiche, allergie, card o cambio sede di consegna.", status: "editable" },
+      { title: "Delivery + feedback", detail: "Consegna fisica e form breve per misurare soddisfazione del momento.", status: "planned" },
+    ],
+    personalization: [
+      { label: "Gift logic", value: "Bakery, flowers o pacchetto personalizzato" },
+      { label: "Budget", value: "Range per sede, ruolo o seniority" },
+      { label: "Tone of voice", value: "Card firmata da manager o team" },
+    ],
+    options: [
+      { title: "Bakery", detail: "Torta artigianale, gusti, dimensione, allergeni." },
+      { title: "Flowers", detail: "Bouquet stagionale, card, fascia oraria." },
+      { title: "Custom package", detail: "Combinazione su richiesta con supplier locali." },
+    ],
+  },
+  {
+    id: "onboarding",
+    title: "Onboarding",
+    subtitle: "Welcome journey",
+    state: "Attivo",
+    icon: <Rocket size={20} />,
+    headline: "Trasforma il primo giorno in un percorso operativo già pronto.",
+    description: "Welcome kit, reminder di formazione, check-in manager e gift post periodo di prova vengono orchestrati in un unico workflow.",
+    roadmap: [
+      { title: "Pre day-one", detail: "Conferma dati, sede, ruolo e welcome kit prima dell’arrivo.", status: "live" },
+      { title: "Day one", detail: "Kit consegnato al luogo concordato con card e materiali personalizzati.", status: "live" },
+      { title: "Prima settimana", detail: "Reminder corsi, documenti interni, buddy e check-in manager.", status: "editable" },
+      { title: "Fine prova", detail: "Gift o messaggio di conferma dopo il periodo iniziale.", status: "planned" },
+    ],
+    personalization: [
+      { label: "Welcome kit", value: "Merch, gadget, card e materiali utili" },
+      { label: "Reminders", value: "Corsi, formazione, documenti, follow-up" },
+      { label: "Approval", value: "Responsabile, HR o office manager" },
+    ],
+    options: [
+      { title: "Merch", detail: "Cappello, t-shirt, felpa, tuta." },
+      { title: "Gadget", detail: "Borraccia, agenda, porta computer, antistress." },
+      { title: "Training reminders", detail: "Workflow operativo coming soon." },
+    ],
+  },
+  {
+    id: "workversary",
+    title: "Workversary",
+    subtitle: "Anniversari lavorativi",
+    state: "In setup",
+    icon: <Gift size={20} />,
+    headline: "Crea una progressione coerente per ogni anniversario lavorativo.",
+    description: "Definisci cosa succede a year 1, year 2 e oltre, con gift fisico o digitale, budget e messaggio standardizzabili.",
+    roadmap: [
+      { title: "Year 1", detail: "Primo anniversario: card personale, gadget premium o gift digitale.", status: "editable" },
+      { title: "Year 2", detail: "Upgrade del riconoscimento con pacchetto fisico, esperienza o budget maggiore.", status: "editable" },
+      { title: "Year 3+", detail: "Regole per milestone più rilevanti e comunicazione manageriale.", status: "planned" },
+      { title: "Feedback loop", detail: "Misurazione risposta employee e ottimizzazione della policy.", status: "planned" },
+    ],
+    personalization: [
+      { label: "Gift type", value: "Fisico, digitale o esperienza" },
+      { label: "Seniority logic", value: "Year 1, Year 2, Year 3+" },
+      { label: "Budget ladder", value: "Crescente per anzianità o ruolo" },
+    ],
+    options: [
+      { title: "Year 1", detail: "Card + gadget personalizzato." },
+      { title: "Year 2", detail: "Gift premium o esperienza locale." },
+      { title: "Year 3+", detail: "Momento su misura con approval dedicata." },
+    ],
+  },
+];
+
 const completedOrders = [
   { employee: "Anna Ferrari", type: "Birthday", packageName: "Sweet & Floral", supplier: "Frida's Flowers", cost: "€52", score: "5/5" },
   { employee: "Tommaso Costa", type: "Onboarding", packageName: "Work Essentials", supplier: "Studio Gadget", cost: "€59", score: "4/5" },
@@ -280,6 +372,27 @@ const reportMonths = [
   },
 ];
 
+const reportMomentBreakdowns = [
+  [
+    { type: "Compleanni", budget: 420, orders: 5, feedback: 4.7 },
+    { type: "Onboarding", budget: 192, orders: 1, feedback: 4.4 },
+    { type: "Anniversari", budget: 0, orders: 0, feedback: 0 },
+    { type: "Milestone", budget: 0, orders: 0, feedback: 0 },
+  ],
+  [
+    { type: "Compleanni", budget: 196, orders: 4, feedback: 4.8 },
+    { type: "Onboarding", budget: 195, orders: 3, feedback: 4.6 },
+    { type: "Anniversari", budget: 0, orders: 0, feedback: 0 },
+    { type: "Milestone", budget: 0, orders: 0, feedback: 0 },
+  ],
+  [
+    { type: "Compleanni", budget: 340, orders: 5, feedback: 4.8 },
+    { type: "Onboarding", budget: 180, orders: 2, feedback: 4.7 },
+    { type: "Anniversari", budget: 90, orders: 1, feedback: 4.6 },
+    { type: "Milestone", budget: 80, orders: 1, feedback: 4.6 },
+  ],
+];
+
 const upcomingOrders = [
   { employee: "Luca Rossi", type: "Birthday", packageName: "Birthday Signature", supplier: "Gamberini", location: "Bologna HQ", time: "12 Mag · 10:30", approval: "Da confermare", status: "Fornitore pronto" },
   { employee: "Sara Bianchi", type: "Onboarding", packageName: "Branded Welcome", supplier: "Atelier Merch", location: "Milano", time: "15 Mag · 09:00", approval: "In attesa HR", status: "Kit in preparazione" },
@@ -287,6 +400,7 @@ const upcomingOrders = [
 ];
 
 export default function RemvyDashboardPrototype() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [page, setPage] = useState<Page>("dashboard");
   const [modal, setModal] = useState<ModalName>(null);
   const [selectedMoment, setSelectedMoment] = useState<Moment>(upcomingMoments[0]);
@@ -303,11 +417,15 @@ export default function RemvyDashboardPrototype() {
     setModal("employeeMoments");
   };
 
+  if (!isAuthenticated) {
+    return <LoginView onLogin={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <div className="rd-shell">
       <Sidebar page={page} setPage={setPage} />
       <main className="rd-main">
-        <TopBar page={page} />
+        <TopBar page={page} onLogout={() => setIsAuthenticated(false)} />
         <div className="rd-content">
           {page === "dashboard" && (
             <DashboardView
@@ -331,6 +449,62 @@ export default function RemvyDashboardPrototype() {
       {modal === "edit" && <EditMomentModal moment={selectedMoment} onClose={() => setModal(null)} />}
       {modal === "employee" && <EmployeeModal onClose={() => setModal(null)} />}
       {modal === "employeeMoments" && <EmployeeMomentsModal employee={selectedEmployee} onClose={() => setModal(null)} />}
+    </div>
+  );
+}
+
+function LoginView({ onLogin }: { onLogin: () => void }) {
+  return (
+    <div className="rd-shell rd-login-shell">
+      <section className="rd-login-card">
+        <div className="rd-login-copy">
+          <div className="rd-brand rd-login-brand">
+            <div className="rd-logo-orbit">
+              <img src="/logo.svg" alt="Remvy" />
+            </div>
+            <div>
+              <div className="rd-wordmark">REMVY</div>
+              <div className="rd-brand-sub">Employee Moments System</div>
+            </div>
+          </div>
+
+          <span className="rd-eyebrow">Client workspace</span>
+          <h1>Accedi alla piattaforma Remvy.</h1>
+          <p>
+            Una vista operativa per capire quali momenti stanno arrivando, quali ordini sono attivi,
+            quanto budget viene usato e che feedback è stato raccolto.
+          </p>
+
+          <div className="rd-login-proof">
+            <div><strong>7</strong><span>momenti attivi</span></div>
+            <div><strong>€700</strong><span>budget mensile</span></div>
+            <div><strong>4.7/5</strong><span>feedback medio</span></div>
+          </div>
+        </div>
+
+        <form
+          className="rd-login-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onLogin();
+          }}
+        >
+          <span className="rd-eyebrow">Demo access</span>
+          <h2>Entra nella dashboard</h2>
+          <label>
+            Email
+            <input type="email" placeholder="demo@remvy.app" defaultValue="demo@remvy.app" />
+          </label>
+          <label>
+            Password
+            <input type="password" placeholder="remvy2026" defaultValue="remvy2026" />
+          </label>
+          <button type="submit" className="rd-primary">
+            Accedi alla piattaforma <ArrowRight size={16} />
+          </button>
+          <small>Accesso demo statico per presentazioni. Nessun dato reale viene salvato.</small>
+        </form>
+      </section>
     </div>
   );
 }
@@ -379,7 +553,7 @@ function Sidebar({ page, setPage }: { page: Page; setPage: (page: Page) => void 
   );
 }
 
-function TopBar({ page }: { page: Page }) {
+function TopBar({ page, onLogout }: { page: Page; onLogout: () => void }) {
   const title = {
     dashboard: "Centro operativo momenti",
     team: "Registro employee",
@@ -397,6 +571,7 @@ function TopBar({ page }: { page: Page }) {
       <div className="rd-top-actions">
         <button className="rd-ghost">Esporta report</button>
         <button className="rd-primary"><Plus size={16} /> Nuovo momento</button>
+        <button className="rd-ghost" onClick={onLogout}>Esci</button>
       </div>
     </header>
   );
@@ -415,7 +590,7 @@ function DashboardView({
         <div className="rd-hero-copy">
           <span className="rd-eyebrow">Dashboard aziendale per gestire recognition e retention</span>
           <h2>I momenti del tuo team, tracciati e gestiti.</h2>
-          <p>Compleanni e onboarding vengono tracciati, preparati, consegnati e misurati senza coordinamento interno. Remvy mostra chi riceve cosa, quando, da quale fornitore e con quale feedback.</p>
+          <p>Compleanni, onboarding e workversary vengono configurati come processi operativi: regole, fornitori, budget, reminder, delivery e feedback restano visibili in un unico workspace.</p>
         </div>
         <div className="rd-kpi-strip">
           <MomentMixKpi />
@@ -478,12 +653,14 @@ function DashboardView({
 function MomentMixKpi() {
   return (
     <div className="rd-mini-kpi rd-moment-mix-kpi">
-      <span>I momenti del tuo team questo mese</span>
-      <div className="rd-moment-mix-total">7</div>
-      <div className="rd-moment-mix-row">
-        <b><CakeSlice size={18} /> 4</b>
-        <span />
-        <b><Rocket size={18} /> 3</b>
+      <div className="rd-kpi-heading">
+        <span>Processi attivi</span>
+        <strong>3</strong>
+      </div>
+      <div className="rd-process-health">
+        <div><span>Birthday</span><strong>Live</strong></div>
+        <div><span>Onboarding</span><strong>Live</strong></div>
+        <div><span>Workversary</span><strong>Setup</strong></div>
       </div>
     </div>
   );
@@ -493,9 +670,9 @@ function SpendKpi() {
   return (
     <div className="rd-mini-kpi rd-spend-kpi">
       {[
-        ["EXP €", "700€"],
-        ["SUST. €", "261€"],
-        ["REM €", "439€"],
+        ["Budget mese", "€700"],
+        ["Speso", "€261"],
+        ["Da sostenere", "€439"],
       ].map(([label, value], index) => (
         <div className="rd-spend-node" key={label}>
           <span>{label}</span>
@@ -690,19 +867,96 @@ function TeamView({ openEmployeeMoments }: { openEmployeeMoments: (employee: Emp
 }
 
 function MomentsView({
-  expandedPackage,
-  setExpandedPackage,
+  expandedPackage: _expandedPackage,
+  setExpandedPackage: _setExpandedPackage,
 }: {
   expandedPackage: string;
   setExpandedPackage: (id: string) => void;
 }) {
-  const birthdays = packages.filter((item) => item.type === "Birthday");
-  const onboarding = packages.filter((item) => item.type === "Onboarding");
+  const [selectedProcess, setSelectedProcess] = useState<MomentProcessId>("birthday");
+  const process = momentProcesses.find((item) => item.id === selectedProcess) ?? momentProcesses[0];
 
   return (
-    <div className="rd-moments-page">
-      <PackageSection title="Compleanni" description="Automatizza il compleanno con fornitori locali selezionati." packages={birthdays} expandedPackage={expandedPackage} setExpandedPackage={setExpandedPackage} />
-      <PackageSection title="Onboarding" description="Struttura il day one con merch, gadget e reminder operativi." packages={onboarding} expandedPackage={expandedPackage} setExpandedPackage={setExpandedPackage} />
+    <div className="rd-moments-page rd-moment-lab">
+      <section className="rd-moment-map-panel">
+        <div className="rd-section-head">
+          <div>
+            <span className="rd-eyebrow">Moment operating map</span>
+            <h3>Configura la gestione dei momenti</h3>
+            <p>Attiva un processo, definisci le regole e Remvy orchestra fornitori, reminder, delivery e feedback.</p>
+          </div>
+          <Pill tone="cyan">3 processi core</Pill>
+        </div>
+
+        <div className="rd-process-console">
+          <div className="rd-process-switcher" aria-label="Seleziona processo momento">
+            {momentProcesses.map((item) => (
+              <button
+                key={item.id}
+                className={`rd-process-button ${item.id === selectedProcess ? "is-active" : ""}`}
+                onClick={() => setSelectedProcess(item.id)}
+              >
+                <span>{item.icon}</span>
+                <strong>{item.title}</strong>
+                <small>{item.subtitle}</small>
+                <em>{item.state}</em>
+              </button>
+            ))}
+          </div>
+
+          <div className="rd-concept-map">
+            <div className="rd-map-core">
+              <span className="rd-live-dot" />
+              <strong>Remvy OS</strong>
+              <small>rules · suppliers · timing · delivery · feedback</small>
+            </div>
+            {process.options.map((option, index) => (
+              <div className={`rd-map-node rd-map-node-${index + 1}`} key={option.title}>
+                <span>{index + 1}</span>
+                <strong>{option.title}</strong>
+                <small>{option.detail}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="rd-process-detail-panel">
+        <div className="rd-process-hero">
+          <div className="rd-icon-badge">{process.icon}</div>
+          <div>
+            <span className="rd-eyebrow">{process.state}</span>
+            <h3>{process.headline}</h3>
+            <p>{process.description}</p>
+          </div>
+        </div>
+
+        <div className="rd-roadmap-grid">
+          <div className="rd-roadmap">
+            {process.roadmap.map((step, index) => (
+              <article className={`rd-roadmap-step is-${step.status}`} key={step.title}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <strong>{step.title}</strong>
+                  <p>{step.detail}</p>
+                </div>
+                <Pill tone={step.status === "live" ? "green" : step.status === "editable" ? "cyan" : "default"}>
+                  {step.status === "live" ? "Live" : step.status === "editable" ? "Modificabile" : "Pianificato"}
+                </Pill>
+              </article>
+            ))}
+          </div>
+
+          <aside className="rd-personalization-panel">
+            <span className="rd-eyebrow">Personalizzazione</span>
+            {process.personalization.map((item) => (
+              <Info key={item.label} label={item.label} value={item.value} />
+            ))}
+            <button className="rd-primary">Modifica roadmap</button>
+            <button className="rd-ghost">Aggiungi regola</button>
+          </aside>
+        </div>
+      </section>
     </div>
   );
 }
@@ -894,33 +1148,41 @@ function OrdersTable() {
 function ReportsView() {
   const [monthIndex, setMonthIndex] = useState(1);
   const month = reportMonths[monthIndex];
-  const maxSpend = 800;
-  const spendHeight = `${Math.round((month.spend / maxSpend) * 100)}%`;
-  const feedbackHeight = `${Math.round((month.feedback / 5) * 100)}%`;
-  const packageTotal = month.birthday + month.onboarding;
-  const birthdayHeight = `${Math.round((month.birthday / Math.max(packageTotal, 1)) * 100)}%`;
-  const onboardingHeight = `${Math.round((month.onboarding / Math.max(packageTotal, 1)) * 100)}%`;
+  const chartItems = reportMomentBreakdowns[monthIndex];
+  const maxBudget = Math.max(...chartItems.map((item) => item.budget), 1);
+  const maxOrders = Math.max(...chartItems.map((item) => item.orders), 1);
+  const totalOrders = chartItems.reduce((sum, item) => sum + item.orders, 0);
+  const totalBudget = chartItems.reduce((sum, item) => sum + item.budget, 0);
 
   return (
     <div className="rd-reports-grid">
-      <ReportPanel title="Report analitico" eyebrow="Spesa · feedback · pacchetti">
-        <div className="rd-report-chart">
-          <div className="rd-chart-axis">
-            <span>€800</span>
-            <span>€400</span>
-            <span>0</span>
+      <ReportPanel title="Budget e ordini per momento" eyebrow="Report operativo">
+        <div className="rd-report-summary">
+          <div><span>Ordini gestiti</span><strong>{totalOrders}</strong></div>
+          <div><span>Budget allocato</span><strong>€{totalBudget}</strong></div>
+          <div><span>Feedback medio</span><strong>{month.feedback}/5</strong></div>
+        </div>
+        <div className="rd-report-chart" aria-label="Budget speso e ordini per tipologia di momento">
+          <div className="rd-chart-y-axis">
+            <span>€{Math.ceil(maxBudget / 100) * 100}</span>
+            <span>Budget</span>
+            <span>€0</span>
           </div>
-          <div className="rd-chart-bars">
-            <ChartBar label="Spesa" value={`${month.spend}€`} height={spendHeight} />
-            <ChartBar label="Feedback" value={`${month.feedback}/5`} height={feedbackHeight} />
-            <ChartBar label="Compleanni" value={`${month.birthday}`} height={birthdayHeight} />
-            <ChartBar label="Onboarding" value={`${month.onboarding}`} height={onboardingHeight} />
+          <div className="rd-moment-chart">
+            {chartItems.map((item) => (
+              <MomentReportBar
+                key={item.type}
+                item={item}
+                maxBudget={maxBudget}
+                maxOrders={maxOrders}
+              />
+            ))}
           </div>
         </div>
         <div className="rd-report-legend">
-          <span><b /> Spesa prevista/sostenuta</span>
-          <span><b /> Feedback medio</span>
-          <span><b /> Mix pacchetti</span>
+          <span><b className="is-budget" /> Budget speso o pianificato</span>
+          <span><b className="is-orders" /> Ordini per tipologia</span>
+          <span><b className="is-feedback" /> Feedback medio raccolto</span>
         </div>
       </ReportPanel>
 
@@ -945,14 +1207,34 @@ function ReportsView() {
   );
 }
 
-function ChartBar({ label, value, height }: { label: string; value: string; height: string }) {
+function MomentReportBar({
+  item,
+  maxBudget,
+  maxOrders,
+}: {
+  item: { type: string; budget: number; orders: number; feedback: number };
+  maxBudget: number;
+  maxOrders: number;
+}) {
+  const budgetHeight = item.budget > 0 ? `${Math.max(14, Math.round((item.budget / maxBudget) * 100))}%` : "0%";
+  const orderHeight = item.orders > 0 ? `${Math.max(10, Math.round((item.orders / maxOrders) * 88))}%` : "0%";
+
   return (
-    <div className="rd-chart-bar">
-      <strong>{value}</strong>
-      <div>
-        <span style={{ height }} />
+    <div className={`rd-moment-chart-item ${item.orders === 0 ? "is-muted" : ""}`}>
+      <div className="rd-chart-topline">
+        <strong>€{item.budget}</strong>
+        <span>{item.orders} ordini</span>
       </div>
-      <small>{label}</small>
+      <div className="rd-chart-stage">
+        <span className="rd-budget-bar" style={{ height: budgetHeight }} />
+        <span className="rd-orders-bar" style={{ height: orderHeight }} />
+        {item.feedback > 0 && (
+          <span className="rd-feedback-dot" style={{ bottom: `${Math.round((item.feedback / 5) * 100)}%` }}>
+            {item.feedback}
+          </span>
+        )}
+      </div>
+      <small>{item.type}</small>
     </div>
   );
 }
